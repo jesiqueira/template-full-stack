@@ -129,8 +129,8 @@ docker compose exec app npx sequelize-cli migration:generate --name add-fk
 docker compose exec app npx sequelize-cli db:migrate:status
 
 # Acessar terminal do container (Backend)
-docker compose exec app sh```
-
+docker compose exec app sh
+```
 
 ## 🖼️ Comandos no Container (Frontend - Serviço frontend)
 
