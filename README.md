@@ -6,8 +6,11 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![Docker](https://img.shields.io/badge/Docker-✓-blue)
+![React](https://img.shields.io/badge/React-✓-blue)
+![Vite](https://img.shields.io/badge/Vite-✓-blue)
 
-**Template profissional para APIs Node.js com TypeScript, Docker, PostgreSQL e ambiente de desenvolvimento completo**
+
+**Template profissional para desenvolvimento fullstack (APIs em Node.js + front-end em React-Vite), com TypeScript, Docker, PostgreSQL e ambiente de desenvolvimento integrado**
 </div>
 
 ## ✨ Características
@@ -34,28 +37,46 @@
 
 ### 🚀 Início Rápido (3 minutos)
 
+### 📋 Pré-requisitos
+
+- [Docker](https://docs.docker.com/get-docker/) 
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Node.js 18+](https://nodejs.org/) (opcional - para desenvolvimento local)
+
+### 🚀 Início Rápido (Backend + Frontend)
+
+Este comando inicia todos os serviços (Backend, DB, PGAdmin e Frontend) e o build das imagens:
+
 ```bash
 # 1. Copiar o template
 cp -r template-node-ts meu-projeto
 cd meu-projeto
 
-# 2. Configurar ambiente (opcional)
-cp .env.example .env
+# 2. Configurar ambiente
+cp .env.example .env              # Backend/Infra
+cp frontend/.env.example frontend/.env # Frontend (variáveis públicas)
 
-# 3. Executar com Docker
+# 3. Executar o ambiente Full-Stack com Docker
 docker compose up --build
 
 # 4. Acessar a aplicação
-# 🌐 API: http://localhost:3000
-# 📊 PGAdmin: http://localhost:8080
+# 🌐 Frontend (React): http://localhost:5173
+# 🌐 API (Backend):    http://localhost:3000
+# 📊 PGAdmin:         http://localhost:8080
 ```
 
+
+
 # 🛠 Comandos Úteis
+
 ## 🐳 Docker Commands
 
 ```bash
-# Iniciar ambiente de desenvolvimento
+# Iniciar ambiente Full-Stack (Backend, DB, Frontend)
 docker compose up
+
+# Iniciar APENAS o Backend e infra (ignora o frontend)
+docker compose up --build app database pgadmin
 
 # Iniciar em background
 docker compose up -d
@@ -66,14 +87,16 @@ docker compose down
 # Parar e remover volumes (reset completo)
 docker compose down -v
 
-# Ver logs da aplicação
+# Ver logs da aplicação (Backend)
 docker compose logs app
 
-# Ver logs do banco
-docker compose logs database
+# Ver logs do Frontend
+docker compose logs frontend
+
 ```
 
-# 🔧 Comandos no Container
+
+# 🔧 Comandos no Container (Backend - Serviço app)
 
 ```bash
 # Executar testes
@@ -105,299 +128,126 @@ docker compose exec app npx sequelize-cli migration:generate --name add-fk
 # Verificar status da migrate
 docker compose exec app npx sequelize-cli db:migrate:status
 
-# Acessar terminal do container
-docker compose exec app sh
-```
-# 🎯 Comandos de Status Úteis:
-```bash
-# Status geral das migrations
-docker compose exec app npx sequelize-cli db:migrate:status
+# Acessar terminal do container (Backend)
+docker compose exec app sh```
 
-# Ver versão do Sequelize CLI
-docker compose exec app npx sequelize-cli --version
 
-# Ajuda com todos os comandos
-docker compose exec app npx sequelize-cli --help
-
-# Ajuda específica de migrations
-docker compose exec app npx sequelize-cli db:migrate --help
-```
-
-# 💻 Desenvolvimento Local (sem Docker)
+## 🖼️ Comandos no Container (Frontend - Serviço frontend)
 
 ```bash
-# Instalar dependências
-npm install
+# Acessar terminal do container (Frontend)
+docker compose exec frontend sh
 
-# Desenvolvimento com hot-reload
-npm run dev
-
-# Executar testes
-npm test
-npm run test:watch
-
-# Build para produção
-npm run build
-
-# Iniciar produção
-npm start
+# Instalar novas dependências no Frontend
+docker compose exec frontend npm install nome-do-pacote
 
 ```
+
+
+## ⚙️ Variáveis de Ambiente (Modularidade)
+
+O template utiliza dois arquivos ```.env ``` separados para garantir a modularidade e segurança:
+
+1. ```./.env``` (Raiz): Variáveis do Backend e Secretas (JWT_SECRET, Credenciais do DB, Portas).
+
+2. ```./frontend/.env```: Variáveis Públicas do Frontend (VITE_APP_NAME, Feature Flags).
+
+### Comunicação API (Docker vs Local):
+
+O Docker Compose injeta a URL de API correta para o contêiner ```frontend``` no momento da execução, sobrescrevendo o ```localhost``` do arquivo ```frontend/.env```:
+
+| Contexto| Variável VITE_API_URL| Destino |
+|-------------|-------------|-------------|
+| Rodando via Docker| http://app:3000/api| Comunicação interna entre containers      |
+| Rodando Localmente    | [Dado 2 ](http://localhost:3000/api)     | Comunicação no Host (sua máquina)     |
+
+
+
 # 🗄️ Banco de Dados
+
 ## 📊 PostgreSQL (Desenvolvimento/Produção)
+
 ### Credenciais Padrão:
-```env
-DB_HOST=database
+
+```bash
+DB_HOST=database # Nome do serviço Docker (interno)
 DB_PORT=5432
 DB_NAME=myapp
 DB_USER=dev
 DB_PASSWORD=dev123
 ```
 
-## 🧪 SQLite (Testes)
-### Configuração Automática:
-```env
-DB_DIALECT=sqlite
-DB_STORAGE=:memory:
-```
+## 🖥️ PGAdmin (Interface Web)
 
-# 🖥️ PGAdmin (Interface Web)
-- URL: http://localhost:8080
-- Email: admin@app.com
-- Senha: admin123
+ - URL: http://localhost:8080
+ - Email: admin@app.com
+ - Senha: admin123
 
 ## Configuração do Servidor no PGAdmin:
-- Host: postgres_db
-- Port: 5432
-- Database: myapp
-- Username: dev
-- Password: dev123
 
-# 🏗️ Estrutura do Projeto
+ - Host: postgres_db
+ - Port: 5432
+ - Database: myapp
+ - Username: dev
+ - Password: dev123
+
+## 🏗️ Estrutura do Projeto
+
 ```text
 TEMPLATE-MODE-TS/
-    ├── 📁 src/
-    │   ├── 🗄️ database/           # Tudo do Sequelize aqui
-    │   │   ├── config/
-    │   │   ├── models/
-    │   │   ├── migrations/        # Migrações dentro de database
-    │   │   ├── seeders/           # Seeders dentro de database  
-    │   │   └── connection.ts
+    ├── 📁 src/                  # Código Fonte do BACKEND
+    │   ├── 🗄️ database/
     │   ├── 🎮 controllers/
-    │   ├── 🛣️ routes/
-    │   ├── ⚙️ services/
-    │   ├── 🔧 middleware/
-    │   ├── app.ts
-    │   ├── server.ts
-    │   ├── 🧪 __tests__/
-    ├── 📄 .dockerignore          # Ignora node_modules
-    ├── 📄 .gitignore            # Ignora node_modules
-    ├── 🐳 docker-compose.yml
-    ├── 🐳 Dockerfile
-    ├── ⚙️ package.json
-    └── ⚙️ tsconfig.json
-```
-# 🔧 Configuração
-## ⚙️ Variáveis de Ambiente
-### Crie um arquivo .env baseado no .env.example:
-```env
-# =======================================================
-# Variáveis do Projeto
-# =======================================================
-PORT=3000
-NODE_ENV=development
-
-# =======================================================
-# Banco de Dados (PostgreSQL)
-# =======================================================
-DB_HOST=database
-DB_USER=dev
-DB_PASSWORD=dev123
-DB_NAME=myapp
-DB_PORT=5432
-
-# =======================================================
-# JWT (Opcional)
-# =======================================================
-JWT_SECRET=your_jwt_secret_here
-JWT_EXPIRES_IN=7d
+    │   └── ... (Restante da estrutura Backend)
+    ├── 📁 frontend/             # MÓDULO FRONTAL (Vite/React)
+    │   ├── 📁 src/              # Código Fonte do Frontend
+    │   ├── 📄 .env              # Variáveis Públicas do Frontend
+    │   ├── 📄 vite.config.ts    # Configuração do Vite
+    │   └── 🐳 Dockerfile.dev    # Dockerfile específico do Frontend
+    ├── 📄 .env.example          # Variáveis do Backend/Infra
+    ├── 📄 .dockerignore         # Ignora node_modules
+    ├── 📄 .gitignore            # Ignora node_modules + frontend/node_modules
+    ├── 🐳 docker-compose.yml     # Orquestrador FULL-STACK
+    ├── 🐳 Dockerfile             # Dockerfile do Backend
+    ├── ⚙️ package.json            # Dependências do Backend
+    └── ⚙️ tsconfig.json           # Configuração TS do Backend
 ```
 
-# 🔐 Personalizar Credenciais
-## 1. Edite docker-compose.yml:
-```yaml
-database:
-  environment:
-    - POSTGRES_USER=novo_usuario
-    - POSTGRES_PASSWORD=nova_senha
-    - POSTGRES_DB=novo_banco
-```
-## 2. Atualize .env:
-```yaml
-DB_USER=novo_usuario
-DB_PASSWORD=nova_senha  
-DB_NAME=novo_banco
-```
-## 3. Reconstrua os containers:
+## 💻 Desenvolvimento Local (sem Docker)
+
+Se você optar por rodar o Backend e o Frontend separadamente na sua máquina:
+
+### 1. Iniciar Backend (com Docker infraestrutura):
+
 ```bash
-docker compose down -v
-docker compose up --build
+# Sobe apenas o PostgreSQL e o PGAdmin
+docker compose up -d database pgadmin
+# Instala dependências do Backend
+npm install
+# Roda o backend
+npm run dev
 ```
+### 2. Iniciar Frontend (Localmente):
 
-# 🧪 Testes
-## 🏃 Executar Testes
 ```bash
-# Todos os testes
-docker compose exec app npm test
-
-# Testes com watch mode
-docker compose exec app npm run test:watch
-
-# Coverage dos testes
-docker compose exec app npm run test:coverage
-
-# Localmente (sem Docker)
-npm test
-```
-# 📊 Ambiente de Testes
-- Banco: SQLite em memória
-
-- Configuração: .env.test
-
-- Porta: 3001
-
-- Isolado: Não interfere no banco de desenvolvimento
-
-# 🚀 Próximos Passos para Desenvolvimento
-## 1. 🗄️ Criar Modelos do Banco
-``` typescript
-// src/database/models/User.ts
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '../connection';
-
-class User extends Model {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-}
-
-User.init({
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  name: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, allowNull: false, unique: true }
-}, {
-  sequelize,
-  modelName: 'User'
-});
-
-export default User;
-```
-## 2. 🔗 Configurar Modelos
-```typescript
-// src/database/connection.ts - Adicione:
-import User from './models/User';
-// User.initModel(sequelize); // Descomente quando criar
-```
-## 3. 🛣️ Criar Novas Rotas
-```typescript
-// Em src/app.ts - Adicione:
-app.get('/api/users', (req: Request, res: Response) => {
-  res.json({ message: 'Lista de usuários' });
-});
+cd frontend
+# Instala dependências do Frontend
+npm install
+# Roda o frontend (usando localhost:3000 conforme frontend/.env)
+npm run dev
 ```
 
-## 4. 📦 Criar Migrações
-```bash
-docker compose exec app npx sequelize-cli model:generate \ --name User \
-  --attributes name:string,email:string
-```
 
-# 🐛 Solução de Problemas
-## ❌ Portas Ocupadas
-```bash
-# Verificar processos nas portas
-lsof -i :3000  # Aplicação
-lsof -i :5432  # PostgreSQL
-lsof -i :8080  # PGAdmin
+## 📄 Licença
 
-# Parar serviços conflitantes
-sudo service postgresql stop  # Se houver PostgreSQL local
-```
-## ❌ Banco Não Conecta
-```bash
-# Verificar saúde do banco
-docker compose logs database
+Distribuído sob licença MIT. Veja LICENSE para mais informações.
 
-# Testar conexão manual
-docker compose exec database pg_isready -U dev -d myapp
+## 👨‍💻 Autor
 
-# Verificar se o database foi criado
-docker compose exec database psql -U dev -l
-```
-## ❌ Erro de Build
-```bash
-# Limpar cache do Docker
-docker system prune -f
-
-# Reconstruir tudo
-docker compose down -v
-docker compose up --build
-```
-## ❌ Problemas de Permissão
-```bash
-# Dar permissão ao Docker (Linux)
-sudo usermod -aG docker $USER
-newgrp docker
-```
-# 🔄 Fluxo de Desenvolvimento
-## 💡 Dia a Dia
-### 1. Iniciar ambiente:
-```bash
-docker compose up
-```
-## 2. Desenvolver:
-- Editar arquivos em src/
-
-- As mudanças recarregam automaticamente
-  
-## 3. Testar:
-```bash
-docker compose exec app npm test
-```
-## 4. Parar:
-```bash
-docker compose down
-```
-# 🚀 Deploy em Produção
-## 1. Build da imagem:
-```bash
-docker build --target production -t minha-app .
-```
-## Usar variáveis de ambiente de produção
-
-## Configurar SSL e domínio
-
-## Usar serviço de banco gerenciado (AWS RDS, etc.)
-
-# 🤝 Contribuindo
-### 1. Fork o projeto
-
-### 2. Crie uma branch para sua feature (git checkout -b feature/AmazingFeature)
-
-### 3. Commit suas mudanças (git commit -m 'Add some AmazingFeature')
-
-### 4. Push para a branch (git push origin feature/AmazingFeature)
-
-### 5. Abra um Pull Request
-
-# 📄 Licença
-### Distribuído sob licença MIT. Veja LICENSE para mais informações.
-# 👨‍💻 Autor
-## JOSÉ EDMAR DE SIQUEIRA
-## -  GitHub: [@jesiqueira](https://github.com/jesiqueira)
-
+JOSÉ EDMAR DE SIQUEIRA -  GitHub: [@jesiqueira](https://github.com/jesiqueira)
 
 # 🙏 Agradecimentos
+
 - ### [Express.js](https://expressjs.com/)
 
 - ### [Sequelize](https://sequelize.org/)
@@ -406,13 +256,13 @@ docker build --target production -t minha-app .
 
 - ### [TypeScript](https://www.typescriptlang.org/)
 
+- ### [Vite](https://vite.dev/)
+
+- ### [React](https://react.dev/)
+
 <div align="center">
 ⭐ Se este template foi útil, considere dar uma estrela no repositório!
 
-🎯 Desenvolvido para acelerar seu desenvolvimento Node.js + TypeScript!
+🎯 Desenvolvido para acelerar seu desenvolvimento Node.js + TypeScript + React!
 
 </div>
-
-
-
-
